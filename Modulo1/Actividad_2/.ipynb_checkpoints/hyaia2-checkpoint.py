@@ -8,10 +8,9 @@ import string
 import seaborn as sns
 from collections import Counter
 from matplotlib import pyplot as plt
-from scipy import stats
 from scipy.stats import median_abs_deviation
 from scipy.stats import zscore
-#from pyod.models.mad import MAD
+from pyod.models.mad import MAD
 from sklearn.ensemble import IsolationForest
 from sklearn.neighbors import LocalOutlierFactor
 from sklearn.cluster import DBSCAN
@@ -26,7 +25,10 @@ class HyAIA:
         self.data_categoricos, self.categoricos_columns = self.get_categoricos()
         self.df_dqr = self.get_dqr()
         self.df_cf = self.conteo_frontera()
-
+        self.df_M_IQR = self.MetodoIQR()
+        self.df_M_StD = self.Metodo_StDev()
+        self.df_M_ZSC = self.Metodo_Z_score()
+        self.df_M_ZSCM = self.Metodo_Z_ScoreMod()
 
     
     ##% Métodos para Análisis de Datos
@@ -88,7 +90,7 @@ class HyAIA:
         
         categorias_values = pd.DataFrame(columns=['Categoricas'])
         for col in list(self.data.columns.values):
-            es_categorical = ls_categorical.loc[col].iloc[0] == True
+            es_categorical = ls_categorical.loc[col][0] == True
             if es_categorical:
                 uniques = self.data[col].dropna().unique()
                 if len(uniques) <= 10:
@@ -106,7 +108,7 @@ class HyAIA:
         max_values = pd.DataFrame(columns=['Max_values'])
         
         for col in self.data.columns.values:
-            if ls_categorical.loc[col].iloc[0] == False:
+            if ls_categorical.loc[col][0] == False:
                 try:
                     max_values.loc[col] = [self.data[col].max()]
                 except:
@@ -118,7 +120,7 @@ class HyAIA:
         min_values = pd.DataFrame(columns=['Min_values'])
         
         for col in self.data.columns:
-            if ls_categorical.loc[col].iloc[0] == False:
+            if ls_categorical.loc[col][0] == False:
                 try:
                     min_values.loc[col] = [self.data[col].min()]
                 except:
@@ -130,7 +132,7 @@ class HyAIA:
         mean_values = pd.DataFrame(columns=['Mean_values'])
         
         for col in self.data.columns.values:
-            if ls_categorical.loc[col].iloc[0] == False: 
+            if ls_categorical.loc[col][0] == False: 
                 try:
                     mean_values.loc[col] = [self.data[col].mean()]
                 except:
@@ -142,7 +144,7 @@ class HyAIA:
         dstd_values = pd.DataFrame(columns=['Dstd_values'])
         
         for col in self.data.columns:
-            if ls_categorical.loc[col].iloc[0] == False:
+            if ls_categorical.loc[col][0] == False:
               try:
                   dstd_values.loc[col] = [self.data[col].std()]
               except:
@@ -244,15 +246,14 @@ class HyAIA:
 #***********************************************************************************************************
 
     #Creación de la función para obtener los outliers por el metodo IQR
-    #def MetodoIQR (df,n,features):
-    def get_MetodoIQR (self,n,features):
+    def MetodoIQR (df,n,features):
         outlier_list = []
     
         for column in features:
             # 1st quartile (25%)
-            Q1 = np.percentile(self.data[column], 25)
+            Q1 = np.percentile(df[column], 25)
             # 3er quartile (75%)
-            Q3 = np.percentile(self.data[column], 75)
+            Q3 = np.percentile(df[column], 75)
     
             #Calcular el IQR
             IQR = Q3-Q1
@@ -264,7 +265,7 @@ class HyAIA:
             Ls = Q3+outlier_limit
     
             #determinar la lista de outliers
-            outlier_list_column = self.data[(self.data[column] < Li) | (self.data[column] > Ls)].index
+            outlier_list_column = df[(df[column] < Li) | (df[column] > Ls)].index
             #Agregar a lista de outliers
             outlier_list.extend(outlier_list_column)
     
@@ -344,21 +345,8 @@ class HyAIA:
         outlier_list = Counter(outlier_list)
         multiple_outliers = list(k for k,v in outlier_list.items() if v>=n)
         return multiple_outliers
-#***************************************************************************************************************
-
-    def media_recortada(datos, porcentaje_recorte): #agregar a la librería
-        media_recortada = None
-        n = len(datos)
-        r = int(n * porcentaje_recorte)
-        datos_ordenados = sorted(datos)
-        datos_recortados = datos_ordenados[r:n-r] if n - 2*r > 0 else []
-        if datos_recortados:
-            media_recortada = sum(datos_recortados) / len(datos_recortados)
-            print(f'Media recortada ({porcentaje_recorte*100}%): {media_recortada}', )
-        else:
-            print('No hay suficientes datos para calcular la media recortada con este porcentaje.')
-        return media_recortada
-    '''
+           
+'''
     #def categoricos_limpieza(self):
     #    for col in self.cateforicos_columns:
             #self.data_categoricos[col] = self.data_categoricos[col].apply(remove_punctuation)
