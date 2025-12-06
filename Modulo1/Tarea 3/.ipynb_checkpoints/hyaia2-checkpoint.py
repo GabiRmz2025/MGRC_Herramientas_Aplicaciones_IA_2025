@@ -378,18 +378,8 @@ class HyAIA:
         else:
             print('No hay suficientes datos para calcular la media recortada con este porcentaje.')
         return media_recortada
-'''
+    '''
     #def categoricos_limpieza(self):
     #    for col in self.cateforicos_columns:
             #self.data_categoricos[col] = self.data_categoricos[col].apply(remove_punctuation)
 '''
-
-#========================================================================================================================
-#========================================================================================================================
-
-#Clase para Algoritmos de detección de Outliers Multivariados - Local Outlier Factor (LOF)
-
-
-class LOF_Detect:
-    def __init__(self, n_neighbors = 20)
-    
